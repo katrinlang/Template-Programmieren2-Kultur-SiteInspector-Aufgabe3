@@ -1,7 +1,6 @@
 package org.htw.prog2.aufgabe2.gui;
 
-import org.htw.prog2.aufgabe2.DICOMFrame;
-import org.htw.prog2.aufgabe2.DICOMFrameMark;
+import org.htw.prog2.aufgabe2.Frame;
 
 import javax.swing.*;
 import java.awt.*;
@@ -9,7 +8,7 @@ import java.awt.event.*;
 
 public class ImageDetailPanel extends JPanel {
     private MainFrame mainFrame;
-    private DICOMFrame frame;
+    private Frame frame;
     private boolean showEdges;
 
     public ImageDetailPanel(MainFrame mainFrame) {
@@ -40,7 +39,7 @@ public class ImageDetailPanel extends JPanel {
         }
     }
 
-    public void setDetailFrame(DICOMFrame frame, boolean showEdges) {
+    public void setDetailFrame(Frame frame, boolean showEdges) {
         this.showEdges = showEdges;
         this.frame = frame;
         setPreferredSize(new Dimension(frame.getImage().getWidth(), frame.getImage().getHeight()));

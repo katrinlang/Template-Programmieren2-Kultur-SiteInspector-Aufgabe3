@@ -1,21 +1,14 @@
 package org.htw.prog2.aufgabe2.gui;
 
-import org.htw.prog2.aufgabe2.DICOMFrame;
-import org.htw.prog2.aufgabe2.DICOMImage;
+import org.htw.prog2.aufgabe2.Frame;
+import org.htw.prog2.aufgabe2.ImageSeries;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.io.File;
 import java.util.LinkedList;
 
 public class ImageListPanel extends JPanel {
-    private DICOMImage image;
+    private ImageSeries image;
     private JPanel thumbnailPanel;
     private LinkedList<FrameThumbnail> markedFrames;
     private MainFrame mainFrame;
@@ -33,18 +26,18 @@ public class ImageListPanel extends JPanel {
         setPreferredSize(new Dimension(width, 400));
     }
 
-    public void setSelectedFrame(DICOMFrame frame) {
+    public void setSelectedFrame(Frame frame) {
     }
 
-    public void setImage(DICOMImage newImage) {
+    public void setImage(ImageSeries newImage) {
     }
 
     private void updateSize() {
     }
 
-    public void addMarkedFrame(DICOMFrame frame) {
+    public void addMarkedFrame(Frame frame) {
     }
 
-    public void removeMarkedFrame(DICOMFrame frame) {
+    public void removeMarkedFrame(Frame frame) {
     }
 }

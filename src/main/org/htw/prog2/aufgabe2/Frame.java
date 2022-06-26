@@ -4,17 +4,17 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.LinkedList;
 
-public class DICOMFrame {
+public class Frame {
     private static final double[][] S_x = new double[][]{new double[]{-1,0,1}, new double[]{-2,0,2}, new double[]{-1,0,1}};
     private static final double[][] S_y = new double[][]{new double[]{-1,-2,-1}, new double[]{0,0,0}, new double[]{1,2,1}};
     private double brightness = 1;
-    private LinkedList<DICOMFrameMark> marks = new LinkedList<>();
+    private LinkedList<FrameMark> marks = new LinkedList<>();
 
     private BufferedImage image;
     private BufferedImage edges;
     private BufferedImage combined;
 
-    public DICOMFrame(BufferedImage image) {
+    public Frame(BufferedImage image) {
         this.image = image;
     }
 
@@ -73,14 +73,14 @@ public class DICOMFrame {
         return edges;
     }
 
-    public void addMark(DICOMFrameMark mark) {
+    public void addMark(FrameMark mark) {
     }
 
-    public LinkedList<DICOMFrameMark> getMarks() {
+    public LinkedList<FrameMark> getMarks() {
         return marks;
     }
 
-    public void removeMark(DICOMFrameMark mark) {
+    public void removeMark(FrameMark mark) {
 
     }
 }

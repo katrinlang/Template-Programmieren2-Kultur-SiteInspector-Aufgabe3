@@ -10,11 +10,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class DICOMImage {
-    private ArrayList<DICOMFrame> frames = new ArrayList<>();
+public class ImageSeries {
+    private ArrayList<Frame> frames = new ArrayList<>();
     private String name;
 
-    public DICOMImage(File infile, String name) {
+    public ImageSeries(File infile, String name) {
         this.name = name;
         try {
             ImageIO.scanForPlugins();
@@ -24,7 +24,7 @@ public class DICOMImage {
             ir.setInput(iis);
             for(int i=0; ; i++) {
                 BufferedImage image = ir.read(i, param);
-                frames.add(new DICOMFrame(image));
+                frames.add(new Frame(image));
             }
         } catch (IOException e) {
             System.out.println("Error reading image file " + infile.getAbsolutePath() + ": " + e.getMessage());
@@ -58,7 +58,7 @@ public class DICOMImage {
         return frames.size();
     }
 
-    public DICOMFrame getFrame(int num) {
+    public Frame getFrame(int num) {
         return frames.get(num);
     }
 }

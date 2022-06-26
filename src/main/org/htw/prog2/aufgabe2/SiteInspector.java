@@ -2,9 +2,7 @@ package org.htw.prog2.aufgabe2;
 
 import org.htw.prog2.aufgabe2.gui.MainFrame;
 
-import java.io.File;
-
-public class DICOMDiagnostics {
+public class SiteInspector {
 
     public static void main(String[] args) {
 //        DICOMImage image = new DICOMImage(new File("data/angiogram1.DCM"), "Angiogram");

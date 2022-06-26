@@ -1,7 +1,7 @@
 package org.htw.prog2.aufgabe2.gui;
 
-import org.htw.prog2.aufgabe2.DICOMFrame;
-import org.htw.prog2.aufgabe2.DICOMImage;
+import org.htw.prog2.aufgabe2.Frame;
+import org.htw.prog2.aufgabe2.ImageSeries;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -17,7 +17,7 @@ public class MainFrame extends JFrame {
     private ImageDetailPanel detailPanel;
     private JSlider seriesSlider;
     private JLabel frameNumberLabel;
-    private DICOMImage image;
+    private ImageSeries image;
     private JCheckBox edgeCheckBox;
 
     public MainFrame() {
@@ -46,7 +46,7 @@ public class MainFrame extends JFrame {
                 chooser.setFileFilter(new FileNameExtensionFilter("DICOM file", "DCM"));
                 if(chooser.showOpenDialog(getParent()) == JFileChooser.APPROVE_OPTION) {
                     File file = chooser.getSelectedFile();
-                    image = new DICOMImage(file, file.getName());
+                    image = new ImageSeries(file, file.getName());
                     imagelist.setImage(image);
                     revalidate();
                 }
@@ -60,11 +60,10 @@ public class MainFrame extends JFrame {
         });
     }
 
-    public void addMarkedFrame(DICOMFrame frame) {
-    }
 
 
-    public void setDetailSeries(DICOMImage image) {
+
+    public void setDetailSeries(ImageSeries image) {
         seriesSlider.setEnabled(true);
         seriesSlider.setMinimum(0);
         seriesSlider.setMaximum(image.getNumFrames()-1);
@@ -74,12 +73,12 @@ public class MainFrame extends JFrame {
         setDetailFrame(image.getFrame(0), edgeCheckBox.isSelected());
     }
 
-    public void setDetailFrame(DICOMFrame frame) {
+    public void setDetailFrame(Frame frame) {
         setDetailFrame(frame, edgeCheckBox.isSelected());
     }
 
 
-    public void setDetailFrame(DICOMFrame frame, boolean showEdges) {
+    public void setDetailFrame(Frame frame, boolean showEdges) {
         detailPanel.setDetailFrame(frame, showEdges);
         imagelist.setSelectedFrame(frame);
         revalidate();
@@ -135,6 +134,9 @@ public class MainFrame extends JFrame {
         controlPanel.add(edgeCheckBox);
     }
 
-    public void removeMarkedFrame(DICOMFrame frame) {
+    public void addMarkedFrame(Frame frame) {
+    }
+
+    public void removeMarkedFrame(Frame frame) {
     }
 }
