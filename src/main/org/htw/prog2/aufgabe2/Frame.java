@@ -5,79 +5,127 @@ import java.awt.image.BufferedImage;
 import java.util.LinkedList;
 
 public class Frame {
-    private static final double[][] S_x = new double[][]{new double[]{-1,0,1}, new double[]{-2,0,2}, new double[]{-1,0,1}};
-    private static final double[][] S_y = new double[][]{new double[]{-1,-2,-1}, new double[]{0,0,0}, new double[]{1,2,1}};
-    private double brightness = 1;
-    private LinkedList<FrameMark> marks = new LinkedList<>();
 
     private BufferedImage image;
-    private BufferedImage edges;
-    private BufferedImage combined;
+    private BufferedImage tracing;
+    private BufferedImage grayscaleImage;
+    private BufferedImage overlay;
+    private BufferedImage combinedImage;
+
+    boolean showTracing= false;
 
     public Frame(BufferedImage image) {
         this.image = image;
     }
 
-    private int getGrayscalePixel(BufferedImage image, int x, int y) {
-        Color c = new Color(image.getRGB(x, y));
-        int r = (int)(c.getRed() * 0.299);
-        int g = (int)(c.getGreen() * 0.715);
-        int b = (int)(c.getBlue() * 0.072);
-        return r+g+b;
-    }
+    public Frame(BufferedImage image, BufferedImage grayscaleImage, BufferedImage tracing, BufferedImage overlay) {
 
-    private void detectEdges() {
-        int width = image.getWidth();
-        int height = image.getHeight();
-
-        int edgeWidth = width - 2;
-        int edgeHeight = height - 2;
-
-        edges = new BufferedImage(edgeWidth, edgeHeight, BufferedImage.TYPE_BYTE_GRAY);
-        int[][] edgesArray = new int[edgeWidth][edgeHeight];
-        double maxValue = 0;
-
-        for(int x=1; x<width-1; x++) {
-            for(int y=1; y<height-1; y++) {
-                double G_x = (S_x[0][0] * getGrayscalePixel(image,x-1, y-1))   + (S_x[0][1] * getGrayscalePixel(image,x, y-1)) + (S_x[0][2] * getGrayscalePixel(image,x+1, y-1)) +
-                        (S_x[1][0] * getGrayscalePixel(image,x-1, y))   + (S_x[1][1] * getGrayscalePixel(image,x, y)) + (S_x[1][2] * getGrayscalePixel(image,x+1, y)) +
-                        (S_x[2][0] * getGrayscalePixel(image,x-1, y+1))   + (S_x[2][1] * getGrayscalePixel(image,x, y+1)) + (S_x[2][2] * getGrayscalePixel(image,x+1, y+1));
-                double G_y = (S_y[0][0] * getGrayscalePixel(image,x-1, y-1))   + (S_y[0][1] * getGrayscalePixel(image,x, y-1)) + (S_y[0][2] * getGrayscalePixel(image,x+1, y-1)) +
-                        (S_y[1][0] * getGrayscalePixel(image,x-1, y))   + (S_y[1][1] * getGrayscalePixel(image,x, y)) + (S_y[1][2] * getGrayscalePixel(image,x+1, y)) +
-                        (S_y[2][0] * getGrayscalePixel(image,x-1, y+1))   + (S_y[2][1] * getGrayscalePixel(image,x, y+1)) + (S_y[2][2] * getGrayscalePixel(image,x+1, y+1));
-                int newValue = Math.abs((int) Math.sqrt((G_x * G_x) + (G_y * G_y)));
-                edgesArray[x-1][y-1]=newValue;
-                if(newValue > maxValue) {
-                    maxValue = newValue;
-                }
-            }
-        }
-        double scale = 255/maxValue;
-        for(int x=0; x<edgeWidth; x++) {
-            for(int y=0; y<edgeHeight; y++) {
-                int col = Math.min((int)(edgesArray[x][y]*scale*brightness), 255);
-                edges.setRGB(x, y, new Color(col, col, col).getRGB());
-            }
-        }
+        this.image = image;
+        this.tracing = tracing;
+        if(grayscaleImage==null) computeGrayscaleImage();
+        else this.grayscaleImage= grayscaleImage;
+        if(overlay==null) computeOverlay();
+        else this.overlay= overlay;
+        computeCombinedImage();
     }
 
     public BufferedImage getImage() {
         return image;
     }
 
-    public BufferedImage getEdges(double brightness) {
-        if(edges == null || this.brightness != brightness) {
-            this.brightness = brightness;
-            detectEdges();
+    public BufferedImage getGrayscaleImage() {
+        return grayscaleImage;
+    }
+
+    public BufferedImage getTracing() {
+        return tracing;
+    }
+
+    public BufferedImage getOverlay() {
+        return overlay;
+    }
+
+    public BufferedImage getCombinedImage(boolean showTracing) {
+        if(showTracing!=this.showTracing){
+            this.showTracing= showTracing;
+            computeCombinedImage();
         }
-        return edges;
+        return combinedImage;
+    }
+
+    private int brightness(BufferedImage image, int x, int y) {
+        Color c = new Color(image.getRGB(x, y));
+        return Math.max(c.getRed(), Math.max(c.getGreen(), c.getBlue()));
+    }
+
+    private void computeGrayscaleImage() {
+
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        grayscaleImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+
+        for(int x= 0; x<width; x++) {
+            for (int y = 0; y < height; y++) {
+                int brightness= brightness(image, x, y);
+                Color c= new Color(brightness, brightness, brightness);
+                grayscaleImage.setRGB(x, y, c.getRGB());
+            }
+        }
+    }
+
+    private void computeOverlay() {
+
+        int width = tracing.getWidth();
+        int height = tracing.getHeight();
+
+        overlay = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                int brightness = 255 - new Color(tracing.getRGB(x, y)).getRed();
+                Color c = new Color(brightness, brightness, brightness, brightness);
+                overlay.setRGB(x, y, c.getRGB());
+            }
+        }
+    }
+
+    public void computeCombinedImage(){
+
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        float aspect= (float)width/(float)height;
+        if(aspect>1) height*=2;
+        else width*=2;
+
+        combinedImage= new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics graphics = combinedImage.getGraphics();
+        graphics.drawImage(grayscaleImage, 0, 0, null);
+        if(aspect>1) {
+            graphics.drawImage(image, 0, height/2, null);
+            if(showTracing)
+                graphics.drawImage(overlay, 0, height/2, null);
+        }
+        else{
+            graphics.drawImage(image, width/2, 0, null);
+            if(showTracing)
+                graphics.drawImage(overlay, width/2, 0, null);
+
+        }
+        graphics.dispose();
+    }
+
+    public void shiftOverlay(int shiftX, int shiftY){
+
     }
 
     public void addMark(FrameMark mark) {
+
     }
 
     public LinkedList<FrameMark> getMarks() {
-        return marks;
+        return null;
     }
 
     public void removeMark(FrameMark mark) {

@@ -13,15 +13,17 @@ import java.awt.event.ActionListener;
 import java.io.File;
 
 public class MainFrame extends JFrame {
-    private ImageListPanel imagelist;
+
+    private ImageListPanel imageList;
     private ImageDetailPanel detailPanel;
     private JSlider seriesSlider;
     private JLabel frameNumberLabel;
-    private ImageSeries image;
+    private ImageSeries images;
     private JCheckBox edgeCheckBox;
 
     public MainFrame() {
-        super("DICOM-Diagnosetool");
+
+        super("Analyse-Tool für archäologische Artefakte");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         BorderLayout layout = new BorderLayout();
         setLayout(layout);
@@ -33,23 +35,32 @@ public class MainFrame extends JFrame {
     private void initMenu() {
         JMenuBar bar = new JMenuBar();
         JMenu fileMenu = new JMenu("Datei");
-        JMenuItem loadFile = new JMenuItem("Öffnen");
+        JMenuItem loadFiles = new JMenuItem("Öffnen");
+        JMenuItem saveFiles = new JMenuItem("Speichern");
         JMenuItem exit = new JMenuItem("Beenden");
         bar.add(fileMenu);
-        fileMenu.add(loadFile);
+        fileMenu.add(loadFiles);
+        fileMenu.add(saveFiles);
         fileMenu.add(exit);
         setJMenuBar(bar);
-        loadFile.addActionListener(new ActionListener() {
+        loadFiles.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
-                chooser.setFileFilter(new FileNameExtensionFilter("DICOM file", "DCM"));
+                chooser.setFileFilter(new FileNameExtensionFilter("PNG image", "png"));
+                chooser.setMultiSelectionEnabled(true);
                 if(chooser.showOpenDialog(getParent()) == JFileChooser.APPROVE_OPTION) {
-                    File file = chooser.getSelectedFile();
-                    image = new ImageSeries(file, file.getName());
-                    imagelist.setImage(image);
+                    File files[] = chooser.getSelectedFiles();
+                    images = new ImageSeries(files);
+                    imageList.setImageSeries(images);
                     revalidate();
                 }
+            }
+        });
+        saveFiles.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                images.writeFrames(0, images.getNumFrames(), true, true, true);
             }
         });
         exit.addActionListener(new ActionListener() {
@@ -60,51 +71,16 @@ public class MainFrame extends JFrame {
         });
     }
 
-
-
-
-    public void setDetailSeries(ImageSeries image) {
-        seriesSlider.setEnabled(true);
-        seriesSlider.setMinimum(0);
-        seriesSlider.setMaximum(image.getNumFrames()-1);
-        seriesSlider.setValue(0);
-        frameNumberLabel.setText("Bild 1/"+(image.getNumFrames()));
-        edgeCheckBox.setEnabled(true);
-        setDetailFrame(image.getFrame(0), edgeCheckBox.isSelected());
-    }
-
-    public void setDetailFrame(Frame frame) {
-        setDetailFrame(frame, edgeCheckBox.isSelected());
-    }
-
-
-    public void setDetailFrame(Frame frame, boolean showEdges) {
-        detailPanel.setDetailFrame(frame, showEdges);
-        imagelist.setSelectedFrame(frame);
-        revalidate();
-        repaint();
-    }
-
-    public void setPreviousDetailFrame() {
-        seriesSlider.setValue(seriesSlider.getValue()-1);
-    }
-
-    public void setNextDetailFrame() {
-        seriesSlider.setValue(seriesSlider.getValue()+1);
-    }
-
-    public void updateDetailView() {
-        int frameNumber = seriesSlider.getValue();
-        setDetailFrame(image.getFrame(frameNumber), edgeCheckBox.isSelected());
-        frameNumberLabel.setText("Bild " + (frameNumber+1) + "/"+(image.getNumFrames()));
-    }
-
     private void initPanels() {
-        imagelist = new ImageListPanel(80, this);
-        add(imagelist, BorderLayout.WEST);
+        imageList = new ImageListPanel(80, this);
+        JScrollPane listPane = new JScrollPane(imageList);
+        listPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        listPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        add(listPane, BorderLayout.WEST);
         JPanel centerPanel = new JPanel();
         centerPanel.setLayout(new BorderLayout());
-        centerPanel.add(new JLabel("Detailansicht"), BorderLayout.NORTH);
+        JLabel detailLabel= new JLabel("Detailansicht");
+        centerPanel.add(detailLabel, BorderLayout.NORTH);
         detailPanel = new ImageDetailPanel(this);
         centerPanel.add(detailPanel, BorderLayout.CENTER);
         add(centerPanel, BorderLayout.CENTER);
@@ -132,6 +108,40 @@ public class MainFrame extends JFrame {
             }
         });
         controlPanel.add(edgeCheckBox);
+    }
+
+    public void setDetailSeries(ImageSeries image) {
+        seriesSlider.setEnabled(true);
+        seriesSlider.setMinimum(0);
+        seriesSlider.setMaximum(image.getNumFrames()-1);
+        seriesSlider.setValue(0);
+        frameNumberLabel.setText("Bild 1/"+(image.getNumFrames()));
+        edgeCheckBox.setEnabled(true);
+        setDetailFrame(image.getFrame(0), edgeCheckBox.isSelected());
+    }
+
+    public void setDetailFrame(Frame frame) {
+        setDetailFrame(frame, edgeCheckBox.isSelected());
+    }
+
+    public void setDetailFrame(Frame frame, boolean showTracing) {
+        detailPanel.setDetailFrame(frame, showTracing);
+        revalidate();
+        repaint();
+    }
+
+    public void setPreviousDetailFrame() {
+        seriesSlider.setValue(seriesSlider.getValue()-1);
+    }
+
+    public void setNextDetailFrame() {
+        seriesSlider.setValue(seriesSlider.getValue()+1);
+    }
+
+    public void updateDetailView() {
+        int frameNumber = seriesSlider.getValue();
+        setDetailFrame(images.getFrame(frameNumber), edgeCheckBox.isSelected());
+        frameNumberLabel.setText("Bild " + (frameNumber+1) + "/"+(images.getNumFrames()));
     }
 
     public void addMarkedFrame(Frame frame) {
